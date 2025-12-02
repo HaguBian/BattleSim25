@@ -135,10 +135,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GridMap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Unit.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GridMap.h" />
     <ClInclude Include="Unit.h" />
   </ItemGroup>
   <ItemGroup>
