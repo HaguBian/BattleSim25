@@ -137,10 +137,13 @@
   <ItemGroup>
     <ClCompile Include="GridMap.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="UI.cpp" />
     <ClCompile Include="Unit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GridMap.h" />
+    <ClInclude Include="Infantry.h" />
+    <ClInclude Include="UI.h" />
     <ClInclude Include="Unit.h" />
   </ItemGroup>
   <ItemGroup>

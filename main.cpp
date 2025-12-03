@@ -5,6 +5,8 @@
 
 #include "GridMap.h"
 #include "Unit.h"
+#include "Infantry.h"
+#include "UI.h"
 
 //
 const int WINDOW_WIDTH = 1920;
@@ -21,6 +23,9 @@ const float CAMERA_MARGIN = 100.f;
 
 int main()
 {
+	// Initialize
+	InitializeUI();
+
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode({ WINDOW_WIDTH, WINDOW_HEIGHT }), "BattleSim25");
 
@@ -43,12 +48,27 @@ int main()
 	// GridMap
 	GridMap gridMap;
 
-	// Teams
-	std::vector<Unit> team0, team1;
-	
-	for (int i = 0; i < 10; ++i) team0.emplace_back(i + 2, 1, 0);
-	for (int i = 0; i < 5; i++) team1.emplace_back(i + 2, 3, 1);
+	// Teams (vector of Unit pointers)
+	std::vector<std::vector<Unit*>> factions;
+	std::vector<Unit*> faction1;
 
+	for (int i = 0; i < 10; ++i) 
+	{
+		faction1.push_back(new Swordsman(i + 2, 1, 0));
+	}
+	factions.push_back(faction1);
+
+	std::vector<Unit*> faction2;
+	for (int i = 0; i < 5; ++i) 
+	{
+		faction2.push_back(new Swordsman(i + 2, 3, 0));
+	}
+	factions.push_back(faction2);
+
+	// Selected unit info panel
+	Unit* selectedUnit = nullptr;
+	bool found = false;
+		
 	// Create camera view 
 	sf::View camera(sf::FloatRect(sf::Vector2f(0.f, 0.f), sf::Vector2f(float(WINDOW_WIDTH), float(WINDOW_HEIGHT))));
 	window.setView(camera);
@@ -56,7 +76,25 @@ int main()
 	// Camera movement variables
 	bool dragging = false;
 	sf::Vector2i lastMousePos;
-	float zoomLevel = 1.f;
+	float zoomFactor = 1.f;
+
+
+
+
+
+
+	faction1[0]->curHealth = 75.f; // For testing health bar display
+
+
+
+
+
+
+
+
+
+
+
 
 	// Start the game loop
 	while (window.isOpen())
@@ -66,6 +104,35 @@ int main()
 		{
 			// Close window: exit
 			if (event->is<sf::Event::Closed>()) window.close();
+
+			// Left mouse click - select unit
+			if (event->is<sf::Event::MouseButtonPressed>() &&
+				event->getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left)
+			{
+				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+				sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+				selectedUnit = nullptr; // Deselect first
+				found = false;
+
+				float cellSize = TILE_SIZE * zoomFactor;
+				for (auto& faction : factions)
+				{
+					for (auto* u : faction)
+					{
+						sf::FloatRect box(
+							sf::Vector2f(u->gridX * cellSize ,  u->gridY * cellSize), 
+							sf::Vector2f(cellSize, cellSize ));
+
+						if (box.contains(worldPos))
+						{
+							selectedUnit = u;
+							found = true;
+						}
+					}
+					if (found) break;
+				}
+			}
 
 			// Middle mouse drag
             if (event->is<sf::Event::MouseButtonPressed>() &&
@@ -89,12 +156,14 @@ int main()
 				lastMousePos = currentMousePos;
 			}
 
+
+
 			// Mouse wheel zoom
 			if (event->is<sf::Event::MouseWheelScrolled>())
 			{
 				auto wheel = event->getIf<sf::Event::MouseWheelScrolled>();
-				zoomLevel += wheel->delta * ZOOM_STEP;
-				zoomLevel = std::clamp(zoomLevel, MIN_ZOOM, MAX_ZOOM);
+				zoomFactor += wheel->delta * ZOOM_STEP;
+				zoomFactor = std::clamp(zoomFactor, MIN_ZOOM, MAX_ZOOM);
 			}
 		}
 
@@ -133,11 +202,19 @@ int main()
 		window.clear(sf::Color::Black);
 
 		// Draw the grid map
-		gridMap.draw(window, zoomLevel);
+		gridMap.draw(window, zoomFactor);
 
-		// Draw the units
-		for (auto& unit : team0) unit.Draw(window, zoomLevel);
-		for (auto& unit : team1) unit.Draw(window, zoomLevel);
+		// Draw units
+		for (auto& faction : factions)
+		{
+			for (auto& u : faction)
+			{
+				u->Draw(window, zoomFactor);
+			}
+		}
+
+		// Draw selected unit info panel
+		DrawUnitInfoPanel(window, selectedUnit);
 
 		// Draw the sprite
 		// window.draw(sprite);
@@ -148,6 +225,12 @@ int main()
 		// Update the window
 		window.display();
 
+	}
+
+	// Cleanup
+	for (auto& faction : factions)
+	{
+		for (auto* unit : faction) delete unit;
 	}
 
 	return 0;
