@@ -1,12 +1,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/System.hpp>
+
 #include <iostream>
 #include <optional>
 
 #include "GridMap.h"
 #include "Unit.h"
-#include "Infantry.h"
+#include "Faction.h"
 #include "UI.h"
+#include "AIController.h"
+#include "FactionMan.h"
 
 //
 const int WINDOW_WIDTH = 1920;
@@ -19,12 +23,12 @@ const float MAX_ZOOM = 3.f;
 const float CAMERA_SPEED = 10.f;
 const float CAMERA_MARGIN = 100.f;
 
-
-
 int main()
 {
+#pragma region HiddenCode
 	// Initialize
 	InitializeUI();
+	sf::Time turnDelay = sf::seconds(0.01f);
 
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode({ WINDOW_WIDTH, WINDOW_HEIGHT }), "BattleSim25");
@@ -32,14 +36,6 @@ int main()
 	// Load a sprite to display
 
 	// Create a graphical text to display
-	sf::Font font;
-	if (!font.openFromFile("resources/fonts/Orbitron-VariableFont_wght.ttf"))
-	{
-
-        std::cerr << "Could not load font\n";
-		return -1;
-	}
-	sf::Text text(font, "BattleSim25", 50);
 
 	// Load a music to play
 
@@ -47,25 +43,57 @@ int main()
 
 	// GridMap
 	GridMap gridMap;
+#pragma endregion
 
 	// Teams (vector of Unit pointers)
-	std::vector<std::vector<Unit*>> factions;
-	std::vector<Unit*> faction1;
+	UnitTemplate newbieTempl = {
+		"Newbie", "Newbie",
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+	};
 
-	for (int i = 0; i < 10; ++i) 
-	{
-		faction1.push_back(new Swordsman(i + 2, 1, 0));
-	}
-	factions.push_back(faction1);
+	Faction* f0 = new Faction(0, "Blue Team");
+	Faction* f1 = new Faction(1, "Red Team");
+	Faction* f2 = new Faction(2, "Green Team");
+	Faction* f3 = new Faction(3, "Yellow Team");
+	std::vector<Faction*> factions = { f0, f1, f2, f3 };
+	f0->aiController = new AIController(f0);
+	f1->aiController = new AIController(f1);
+	f2->aiController = new AIController(f2);
+	f3->aiController = new AIController(f3);
 
-	std::vector<Unit*> faction2;
-	for (int i = 0; i < 5; ++i) 
-	{
-		faction2.push_back(new Swordsman(i + 2, 3, 0));
-	}
-	factions.push_back(faction2);
+	auto spawnUnits = [&](Faction* fac, int startX, int startY)
+		{
+			int count = 0;
+			for (int i = 0; i < 5; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					if (count >= 20) return;
 
-	// Selected unit info panel
+					int x = startX + i;
+					int y = startY + j;
+
+					Unit* u = new Unit(x, y, fac->factionID, newbieTempl);
+					u->faction = fac;
+					fac->AddUnit(u);
+
+					count++;
+				}
+			}
+		};
+
+	spawnUnits(f0, 5, 5);
+	spawnUnits(f1, 45 - 7, 5);
+	spawnUnits(f2, 5, 45 - 7);
+	spawnUnits(f3, 45 - 7, 45 - 7);
+	FactionManager factionManager;
+	for (auto* f : factions)
+		factionManager.AddFaction(f);
+
+	factionManager.BuildTurnOrder();
+
+
+	// Selected unit info panelz
 	Unit* selectedUnit = nullptr;
 	bool found = false;
 		
@@ -77,25 +105,7 @@ int main()
 	bool dragging = false;
 	sf::Vector2i lastMousePos;
 	float zoomFactor = 1.f;
-
-
-
-
-
-
-	faction1[0]->curHealth = 75.f; // For testing health bar display
-
-
-
-
-
-
-
-
-
-
-
-
+	sf::Clock turnClock;
 	// Start the game loop
 	while (window.isOpen())
 	{
@@ -116,9 +126,9 @@ int main()
 				found = false;
 
 				float cellSize = TILE_SIZE * zoomFactor;
-				for (auto& faction : factions)
+				for (auto& faction : factionManager.factions)
 				{
-					for (auto* u : faction)
+					for (auto* u : faction->units)
 					{
 						sf::FloatRect box(
 							sf::Vector2f(u->gridX * cellSize ,  u->gridY * cellSize), 
@@ -133,7 +143,7 @@ int main()
 					if (found) break;
 				}
 			}
-
+#pragma region mouse draft and zoom
 			// Middle mouse drag
             if (event->is<sf::Event::MouseButtonPressed>() &&
 				event->getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Middle)
@@ -155,8 +165,6 @@ int main()
 				window.setView(camera);
 				lastMousePos = currentMousePos;
 			}
-
-
 
 			// Mouse wheel zoom
 			if (event->is<sf::Event::MouseWheelScrolled>())
@@ -197,7 +205,8 @@ int main()
 		camera.setCenter(camPos);
 
 		window.setView(camera);
-
+#pragma endregion		
+		
 		// Clear screen
 		window.clear(sf::Color::Black);
 
@@ -205,15 +214,17 @@ int main()
 		gridMap.draw(window, zoomFactor);
 
 		// Draw units
-		for (auto& faction : factions)
+		for (auto& faction : factionManager.factions)
 		{
-			for (auto& u : faction)
+			faction->DrawVision(window, zoomFactor);
+			for (auto& u : faction->units)
 			{
 				u->Draw(window, zoomFactor);
 			}
 		}
 
 		// Draw selected unit info panel
+		window.setView(window.getDefaultView());
 		DrawUnitInfoPanel(window, selectedUnit);
 
 		// Draw the sprite
@@ -222,6 +233,12 @@ int main()
 		// Draw the text
 		//window.draw(text);
 
+		if (turnClock.getElapsedTime() >= turnDelay)
+		{
+			factionManager.NextTurn();
+			turnClock.restart();
+		}
+
 		// Update the window
 		window.display();
 
@@ -229,9 +246,7 @@ int main()
 
 	// Cleanup
 	for (auto& faction : factions)
-	{
-		for (auto* unit : faction) delete unit;
-	}
+		delete faction;
 
 	return 0;
 }

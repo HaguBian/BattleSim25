@@ -135,16 +135,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AIController.cpp" />
+    <ClCompile Include="Faction.cpp" />
+    <ClCompile Include="FactionMan.cpp" />
     <ClCompile Include="GridMap.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TurnScheduler.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Unit.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AIController.h" />
+    <ClInclude Include="Faction.h" />
     <ClInclude Include="GridMap.h" />
+    <ClInclude Include="FactionMan.h" />
     <ClInclude Include="Infantry.h" />
+    <ClInclude Include="TurnScheduler.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Unit.h" />
+    <ClInclude Include="UnitTemplate.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

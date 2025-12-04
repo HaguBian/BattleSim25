@@ -93,7 +93,7 @@ void DrawUnitInfoPanel(sf::RenderWindow& window, Unit* unit)
 	hpBg.setPosition(sf::Vector2f(x, y));
 	window.draw(hpBg);
 
-	float hpPercent = unit->curHealth / unit->maxHealth;
+	float hpPercent = unit->final.curHP / unit->final.maxHP;
 	hpPercent = std::max(0.f, std::min(1.f, hpPercent));
 
 	sf::RectangleShape hpBar(sf::Vector2f(barWidth * hpPercent, barHeight));
@@ -101,7 +101,7 @@ void DrawUnitInfoPanel(sf::RenderWindow& window, Unit* unit)
 	hpBar.setPosition(sf::Vector2f(x, y));
 	window.draw(hpBar);
 
-	sf::Text hpText(gFont, "HP: " + std::to_string(int(unit->curHealth)) + " / " + std::to_string(int(unit->maxHealth)), 12);
+	sf::Text hpText(gFont, "HP: " + std::to_string(int(unit->final.curHP)) + " / " + std::to_string(int(unit->final.maxHP)), 12);
 	hpText.setPosition(sf::Vector2f(x + 5.f, y + 2.f));
 	hpText.setFillColor(sf::Color::Black);
 	window.draw(hpText);
@@ -109,15 +109,12 @@ void DrawUnitInfoPanel(sf::RenderWindow& window, Unit* unit)
 	y += 30.f;
 
 	// Stats
-	float col1X = x;
+	float col1X = x + panelWidth / 4.f;
 	float col2X = x + panelWidth / 2.f;
 
 	struct Row { std::string k; std::string v; };
 	std::vector<Row> stats = {
-		{ "ATK", std::to_string(unit->armor) },
-		{ "DEF",     std::to_string(unit->shield) },
-		{ "MOVE",    std::to_string(unit->defense) },
-		{ "HIT",     std::to_string(unit->shield) + "%" },
+		{ "ATK", std::to_string(unit->final.attack) }
 	};
 
 	for (auto& r : stats)
