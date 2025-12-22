@@ -1,0 +1,36 @@
+name: BattleSim25 Windows Build (SFML 2.6.2)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Download SFML 2.6.2
+      run: |
+        curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-vc17-64-bit.zip
+        tar -xf sfml.zip
+
+    - name: Build BattleSim25
+      run: |
+        mkdir build
+        cl /std:c++17 ^
+           /EHsc ^
+           /I SFML-2.6.2/include ^
+           src/main.cpp src/Game.cpp ^
+           /link ^
+           /LIBPATH:SFML-2.6.2/lib ^
+           sfml-graphics.lib sfml-window.lib sfml-system.lib ^
+           user32.lib gdi32.lib winmm.lib ^
+           /OUT:build/BattleSim25.exe

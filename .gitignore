@@ -1,0 +1,16 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build
+x64/
+Debug/
+Release/
+build/
+
+# SFML DLL
+*.dll
+
+# Executables
+*.exe
