@@ -25,12 +25,11 @@ jobs:
     - name: Build BattleSim25
       run: |
         mkdir build
-        cl /std:c++17 ^
-           /EHsc ^
-           /I SFML-2.6.2/include ^
-           src/main.cpp src/Game.cpp ^
-           /link ^
-           /LIBPATH:SFML-2.6.2/lib ^
-           sfml-graphics.lib sfml-window.lib sfml-system.lib ^
-           user32.lib gdi32.lib winmm.lib ^
-           /OUT:build/BattleSim25.exe
+        cl /std:c++17 /EHsc ^
+          /I SFML-2.6.2/include ^
+          src\*.cpp src\core\*.cpp src\world\*.cpp ^
+          /link ^
+          /LIBPATH:SFML-2.6.2/lib ^
+          sfml-graphics.lib sfml-window.lib sfml-system.lib ^
+          user32.lib gdi32.lib winmm.lib ^
+          /OUT:build/BattleSim25.exe
