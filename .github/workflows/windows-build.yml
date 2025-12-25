@@ -27,7 +27,7 @@ jobs:
         mkdir build
         cl /std:c++17 /EHsc ^
           /I SFML-2.6.2-windows-vc17-64-bit\include ^
-          src\*.cpp src\core\*.cpp src\world\*.cpp ^
+          *.cpp ^
           /link ^
           /LIBPATH:SFML-2.6.2-windows-vc17-64-bit\lib ^
           sfml-graphics.lib sfml-window.lib sfml-system.lib ^
