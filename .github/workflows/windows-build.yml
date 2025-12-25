@@ -19,7 +19,7 @@ jobs:
 
     - name: Download SFML 2.6.2
       run: |
-        curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-vc17-64-bit.zip
+        curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.2/SFML-2.6.2-windows-vc17-64-bit.zip
         7z x sfml.zip
 
     - name: Build BattleSim25
