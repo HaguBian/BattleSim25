@@ -10,7 +10,6 @@ public:
 	void update(float deltaTime, const sf::RenderWindow& window);
 
 	void apply(sf::RenderWindow& window);
-	void clamp(const sf::FloatRect& mapBounds);
 	sf::View& getView();
 
 private:

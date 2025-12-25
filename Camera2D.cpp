@@ -96,11 +96,6 @@ void Camera2D::apply(sf::RenderWindow& window)
 	window.setView(view);
 }
 
-void Camera2D::clamp(const sf::FloatRect& mapBounds)
-{
-    //
-}
-
 sf::View& Camera2D::getView()
 {
 	return view;
