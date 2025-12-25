@@ -1,0 +1,41 @@
+name: Build SFML (Windows MSVC)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Clone vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+
+    - name: Bootstrap vcpkg
+      run: |
+        .\vcpkg\bootstrap-vcpkg.bat
+
+    - name: Install SFML
+      run: |
+        .\vcpkg\vcpkg install sfml:x64-windows
+
+    - name: Build
+      shell: powershell
+      run: |
+        cl /std:c++17 /EHsc `
+           /I vcpkg\installed\x64-windows\include `
+           BattleSim25\main.cpp `
+           BattleSim25\Camera2D.cpp `
+           BattleSim25\Map.cpp `
+           /link `
+           /LIBPATH:vcpkg\installed\x64-windows\lib `
+           sfml-graphics.lib `
+           sfml-window.lib `
+           sfml-system.lib `
+           user32.lib gdi32.lib winmm.lib
+
