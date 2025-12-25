@@ -20,20 +20,16 @@ jobs:
     - name: Download SFML 2.6.2
       run: |
         curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-vc17-64-bit.zip
-        7z x sfml.zip
+        tar -xf sfml.zip
 
     - name: Build BattleSim25
       run: |
         mkdir build
         cl /std:c++17 /EHsc ^
-          /I SFML-2.6.2-windows-vc17-64-bit\include ^
+          /I SFML-2.6.2/include ^
           src\*.cpp src\core\*.cpp src\world\*.cpp ^
           /link ^
-          /LIBPATH:SFML-2.6.2-windows-vc17-64-bit\lib ^
+          /LIBPATH:SFML-2.6.2/lib ^
           sfml-graphics.lib sfml-window.lib sfml-system.lib ^
           user32.lib gdi32.lib winmm.lib ^
-          /OUT:build\BattleSim25.exe
-
-    - name: Copy SFML DLLs
-      run: |
-        copy SFML-2.6.2-windows-vc17-64-bit\bin\*.dll build\
+          /OUT:build/BattleSim25.exe
